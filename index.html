@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Todo List Application</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 p-8">
+    <div class="max-w-md mx-auto bg-white shadow-lg rounded-lg p-6">
+        <h1 class="text-2xl font-bold mb-4 text-center">Todo List</h1>
+
+        <div class="flex mb-4">
+            <input type="text" id="taskInput" placeholder="Enter a new task" class="flex-grow p-2 border rounded-l-lg">
+            <button id="addTask" class="bg-blue-500 text-white px-4 py-2 rounded-r-lg hover:bg-blue-600">
+                Add Task
+            </button>
+        </div>
+
+        <ul id="taskList" class="divide-y divide-gray-200">
+            <!-- Tasks will be dynamically added here -->
+        </ul>
+    </div>
+
+    <script>
+        const taskInput = document.getElementById('taskInput');
+        const addTaskButton = document.getElementById('addTask');
+        const taskList = document.getElementById('taskList');
+
+        // Function to add a new task
+        function addTask() {
+            const taskText = taskInput.value.trim();
+            if (taskText) {
+                fetch('/tasks', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: taskText })
+                })
+                    .then(response => response.json())
+                    .then(task => {
+                        renderTask(task);
+                        taskInput.value = '';
+                    });
+            }
+        }
+
+        // Function to render a task
+        function renderTask(task) {
+            const li = document.createElement('li');
+            li.className = 'py-4 flex items-center justify-between';
+            li.innerHTML = `
+                <div class="flex items-center">
+                    <input 
+                        type="checkbox" 
+                        ${task.completed ? 'checked' : ''}
+                        onclick="toggleTask(${task.id}, this.checked)"
+                        class="mr-3"
+                    >
+                    <span class="${task.completed ? 'line-through text-gray-500' : ''}">${task.text}</span>
+                </div>
+                <div>
+                    <button 
+                        onclick="deleteTask(${task.id})" 
+                        class="text-red-500 hover:text-red-700 mr-2"
+                    >
+                        Delete
+                    </button>
+                    <button 
+                        onclick="editTask(${task.id}, '${task.text}')" 
+                        class="text-blue-500 hover:text-blue-700"
+                    >
+                        Edit
+                    </button>
+                </div>
+            `;
+            taskList.appendChild(li);
+        }
+
+        // Function to edit a task
+        function editTask(id, currentText) {
+            const newText = prompt('Edit task:', currentText);
+            if (newText && newText.trim() !== currentText) {
+                fetch(`/tasks/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: newText })
+                })
+                    .then(response => response.json())
+                    .then(() => {
+                        // Refresh task list
+                        loadTasks();
+                    });
+            }
+        }
+
+        // Function to delete a task
+        function deleteTask(id) {
+            fetch(`/tasks/${id}`, { method: 'DELETE' })
+                .then(() => {
+                    // Refresh task list
+                    loadTasks();
+                });
+        }
+
+        // Function to toggle task completion
+        function toggleTask(id, completed) {
+            fetch(`/tasks/${id}/toggle`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ completed: completed })
+            })
+                .then(response => response.json())
+                .then(() => {
+                    // Refresh task list
+                    loadTasks();
+                });
+        }
+
+        // Function to load tasks
+        function loadTasks() {
+            fetch('/tasks')
+                .then(response => response.json())
+                .then(tasks => {
+                    // Clear existing tasks
+                    taskList.innerHTML = '';
+                    // Render each task
+                    tasks.forEach(renderTask);
+                });
+        }
+
+        // Event Listeners
+        addTaskButton.addEventListener('click', addTask);
+        taskInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addTask();
+        });
+
+        // Load tasks on page load
+        loadTasks();
+    </script>
+</body>
+
+</html>
