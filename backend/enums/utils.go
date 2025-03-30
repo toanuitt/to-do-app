@@ -34,7 +34,7 @@ func ParseTaskCategory(s string) TaskCategory {
 	case "Home":
 		return Home
 	default:
-		return Work
+		return Others
 	}
 }
 

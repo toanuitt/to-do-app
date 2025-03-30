@@ -3,7 +3,6 @@ package routes
 import (
 	"github.com/gorilla/mux"
     "backend/controllers"
-	"backend/middleware"
 )
 
 func Router() *mux.Router {
@@ -25,9 +24,6 @@ func Router() *mux.Router {
 	router.HandleFunc("/tasks/categories", listCategories).Methods("GET")
 	router.HandleFunc("/tasks/{id}/category", assignCategory).Methods("PATCH")
 
-	// Middleware
-	router.Use(middleware.LoggingMiddleware)
-	router.Use(middleware.AuthMiddleware)
 
 	return router
 }

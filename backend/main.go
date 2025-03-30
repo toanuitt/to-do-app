@@ -1,40 +1,38 @@
 package main
 
 import (
-	"database/sql"
-	"fmt"
-	"log"
-
-	_ "github.com/lib/pq"
+    "backend/database"
+    "backend/routes"
+    "log"
+    "net/http"
 )
 
 func main() {
-	// Kết nối đến PostgreSQL trong Docker
-	const (
-		host     = "postgres" // Dùng tên service trong Docker Compose
-		port     = 5432       // Port mặc định của PostgreSQL
-		user     = "postgres"
-		password = "postgres"
-		dbname   = "postgres"
-	)
+    // Initialize database connection
+    database.InitDB()
+    defer database.DB.Close()
 
-	// Chuỗi kết nối PostgreSQL
-	psqlInfo := fmt.Sprintf(
-		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		host, port, user, password, dbname,
-	)
+    // Initialize router
+    router := routes.Router()
 
-	// Mở kết nối đến PostgreSQL
-	db, err := sql.Open("postgres", psqlInfo)
-	if err != nil {
-		log.Fatal("Lỗi khi mở kết nối đến database:", err)
-	}
-	defer db.Close()
+    // Add CORS middleware
+    handler := corsMiddleware(router)
 
-	// Kiểm tra kết nối
-	if err = db.Ping(); err != nil {
-		log.Fatal("Không thể kết nối đến PostgreSQL:", err)
-	}
+    log.Println("Server starting on :8080")
+    log.Fatal(http.ListenAndServe(":8080", handler))
+}
 
-	fmt.Println("✅ Kết nối thành công đến PostgreSQL trong Docker!")
+func corsMiddleware(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        w.Header().Set("Access-Control-Allow-Origin", "*")
+        w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+        w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+        if r.Method == "OPTIONS" {
+            w.WriteHeader(http.StatusOK)
+            return
+        }
+
+        next.ServeHTTP(w, r)
+    })
 }
