@@ -6,24 +6,22 @@ import (
 )
 
 func Router() *mux.Router {
-
 	router := mux.NewRouter()
 
-	router.HandleFunc("/tasks", createTask).Methods("POST")
-	router.HandleFunc("/tasks", listTasks).Methods("GET")
-	router.HandleFunc("/tasks/{id}", getTask).Methods("GET")
-	router.HandleFunc("/tasks/{id}", updateTask).Methods("PUT")
-	router.HandleFunc("/tasks/{id}", deleteTask).Methods("DELETE")
+	router.HandleFunc("/tasks", controllers.CreateTask).Methods("POST")
+	router.HandleFunc("/tasks", controllers.ListTasks).Methods("GET")
+	router.HandleFunc("/tasks/{id}", controllers.GetTask).Methods("GET")
+	router.HandleFunc("/tasks/{id}", controllers.UpdateTask).Methods("PUT")
+	router.HandleFunc("/tasks/{id}", controllers.DeleteTask).Methods("DELETE")
 
 	// Task Management Routes
-	router.HandleFunc("/tasks/{id}/complete", markTaskCompleted).Methods("PATCH")
-	router.HandleFunc("/tasks/{id}/priority", setTaskPriority).Methods("PATCH")
-	router.HandleFunc("/tasks/{id}/deadline", setTaskDeadline).Methods("PATCH")
+	router.HandleFunc("/tasks/{id}/complete", controllers.MarkTaskCompleted).Methods("PATCH")
+	router.HandleFunc("/tasks/{id}/priority", controllers.SetTaskPriority).Methods("PATCH")
+	router.HandleFunc("/tasks/{id}/deadline", controllers.SetTaskDeadline).Methods("PATCH")
 
 	// Categorization Routes
-	router.HandleFunc("/tasks/categories", listCategories).Methods("GET")
-	router.HandleFunc("/tasks/{id}/category", assignCategory).Methods("PATCH")
-
+	router.HandleFunc("/tasks/categories", controllers.ListCategories).Methods("GET")
+	router.HandleFunc("/tasks/{id}/category", controllers.AssignCategory).Methods("PATCH")
 
 	return router
 }

@@ -1,6 +1,9 @@
 package models 
 
-import "backend/enums"
+import (
+	"backend/enums"
+	"time"
+)
 
 type Task struct {
 	ID 			int 				`json:"id"`
@@ -8,6 +11,6 @@ type Task struct {
 	Description string				`json:"description"`
 	Priority 	enums.TaskPriority  `json:"priority"`
 	Category 	enums.TaskCategory  `json:"category"`
-	DueDate 	string				`json:"dueDate"`
+	DueDate 	time.Time			`json:"dueDate"`
 	Completed 	bool				`json:"completed"`
 }

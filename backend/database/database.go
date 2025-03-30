@@ -12,11 +12,11 @@ var DB *sql.DB
 
 func InitDB(){
     const(
-        host = "localhost"
+        host = "172.18.0.2"
         port = 5432
         user = "postgres"
         password = "postgres"
-        dbname = "to-do-list"
+        dbname = "postgres"
     )
 
     psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",

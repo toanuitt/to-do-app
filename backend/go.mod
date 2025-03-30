@@ -1,6 +1,4 @@
-module to-do-app
-
-go 1.22.2
+module backend
 
 require (
 	github.com/gorilla/mux v1.8.1

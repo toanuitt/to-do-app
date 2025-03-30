@@ -1,5 +1,20 @@
 package enums
 
+type TaskPriority int
+
+const (
+	Low TaskPriority = iota +1
+	Medium
+	High
+)
+
+type TaskCategory int 
+
+const (
+	Work TaskCategory = iota + 1
+	Study
+	Home
+)
 // conver taskpriority to string 
 func (p TaskPriority) String() string {
 	return [...]string{"Low", "Medium", "High"}[p-1]
@@ -34,7 +49,7 @@ func ParseTaskCategory(s string) TaskCategory {
 	case "Home":
 		return Home
 	default:
-		return Others
+		return Work
 	}
 }
 
