@@ -12,20 +12,19 @@ var DB *sql.DB
 
 func InitDB(){
     const(
-        host = "172.18.0.2"
+        host = "localhost"
         port = 5432
         user = "postgres"
         password = "postgres"
         dbname = "postgres"
     )
-
+    fmt.Println("Connecting to database...")
     psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
         host, port, user, password, dbname)
-    
     var err error
     DB, err = sql.Open("postgres", psqlInfo)
     if err != nil {
-        log.Fatal(err)
+        log.Fatal("loi roi",err)
     }
     err = DB.Ping()
     if err != nil {
@@ -47,4 +46,4 @@ func InitDB(){
         log.Fatalf("Failed to create table: %v", err)
     }
     log.Println("Table tasks created successfully")
-}
+}                                

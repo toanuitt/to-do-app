@@ -5,6 +5,7 @@ import (
     "backend/routes"
     "log"
     "net/http"
+    "path/filepath"
 )
 
 func main() {
@@ -14,6 +15,11 @@ func main() {
 
     // Initialize router
     router := routes.Router()
+
+    // Serve static files from frontend directory
+    frontendDir := filepath.Join("..", "frontend")
+    fs := http.FileServer(http.Dir(frontendDir))
+    router.PathPrefix("/").Handler(http.StripPrefix("/", fs))
 
     // Add CORS middleware
     handler := corsMiddleware(router)
