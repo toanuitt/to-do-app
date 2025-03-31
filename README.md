@@ -5,7 +5,7 @@
 
 ### setup
 ```bash
-    cd backend
-    docker-compose up -d
-    go run main.go
+cd backend
+docker-compose up -d
+go run main.go
 ```
