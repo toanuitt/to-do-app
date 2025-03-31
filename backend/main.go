@@ -16,6 +16,9 @@ func main() {
     // Initialize router
     router := routes.Router()
 
+
+    // apiRouter := router.PathPrefix("/api").Subrouter()
+    // routes.RegisterAPIRoutes(apiRouter)
     // Serve static files from frontend directory
     frontendDir := filepath.Join("..", "frontend")
     fs := http.FileServer(http.Dir(frontendDir))

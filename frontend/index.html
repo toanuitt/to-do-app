@@ -179,10 +179,8 @@
                     <label for="category">Category</label>
                     <select id="category">
                         <option value="Work">Work</option>
-                        <option value="Personal">Personal</option>
                         <option value="Study">Study</option>
-                        <option value="Health">Health</option>
-                        <option value="Other">Other</option>
+                        <option value="Home">Home</option>
                     </select>
                 </div>
 
@@ -210,10 +208,8 @@
                 <select id="filter-category">
                     <option value="">All Categories</option>
                     <option value="Work">Work</option>
-                    <option value="Personal">Personal</option>
                     <option value="Study">Study</option>
-                    <option value="Health">Health</option>
-                    <option value="Other">Other</option>
+                    <option value="Home">Home</option>
                 </select>
 
                 <select id="filter-status">
@@ -262,6 +258,18 @@
         // API URL
         const API_URL = '/api/tasks';
 
+        const priorityMap = {
+            'High': 3,
+            'Medium': 2,
+            'Low': 1
+        };
+
+        const categoryMap = {
+            'Work': 1,
+            'Study': 2,
+            'Home': 3
+        };
+
         // Load tasks on page load
         document.addEventListener('DOMContentLoaded', loadTasks);
 
@@ -282,8 +290,8 @@
             const task = {
                 title: titleInput.value,
                 description: descriptionInput.value,
-                priority: priorityInput.value,
-                category: categoryInput.value,
+                priority: priorityMap[priorityInput.value],
+                category: categoryMap[categoryInput.value],
                 dueDate: new Date(dueDateInput.value).toISOString(),
                 completed: false
             };
@@ -317,44 +325,56 @@
                 const response = await fetch(API_URL);
                 let tasks = await response.json();
 
-                // Apply filters
-                const priorityFilter = filterPriority.value;
-                const categoryFilter = filterCategory.value;
-                const statusFilter = filterStatus.value;
-
-                if (priorityFilter) {
-                    tasks = tasks.filter(task => task.priority === priorityFilter);
+                // If tasks is null or undefined, use an empty array instead
+                if (!tasks) {
+                    tasks = [];
                 }
 
-                if (categoryFilter) {
-                    tasks = tasks.filter(task => task.category === categoryFilter);
-                }
+                // Apply filters (only if there are tasks)
+                if (tasks.length > 0) {
+                    const priorityFilter = filterPriority.value;
+                    const categoryFilter = filterCategory.value;
+                    const statusFilter = filterStatus.value;
 
-                if (statusFilter) {
-                    if (statusFilter === 'completed') {
-                        tasks = tasks.filter(task => task.completed);
-                    } else if (statusFilter === 'pending') {
-                        tasks = tasks.filter(task => !task.completed);
+                    if (priorityFilter) {
+                        tasks = tasks.filter(task => task.priority.toString() === priorityFilter);
                     }
-                }
 
-                // Sort by priority and due date
-                tasks.sort((a, b) => {
-                    const priorityOrder = { 'High': 1, 'Medium': 2, 'Low': 3 };
-                    if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
-                        return priorityOrder[a.priority] - priorityOrder[b.priority];
+                    if (categoryFilter) {
+                        tasks = tasks.filter(task => task.category.toString() === categoryFilter);
                     }
-                    return new Date(a.dueDate) - new Date(b.dueDate);
-                });
+
+                    if (statusFilter) {
+                        if (statusFilter === 'completed') {
+                            tasks = tasks.filter(task => task.completed);
+                        } else if (statusFilter === 'pending') {
+                            tasks = tasks.filter(task => !task.completed);
+                        }
+                    }
+
+                    // Sort by priority and due date
+                    tasks.sort((a, b) => {
+                        const priorityOrder = { 'HIGH': 1, 'MEDIUM': 2, 'LOW': 3 };
+                        const aPriority = a.priority.toString();
+                        const bPriority = b.priority.toString();
+                        if (priorityOrder[aPriority] !== priorityOrder[bPriority]) {
+                            return priorityOrder[aPriority] - priorityOrder[bPriority];
+                        }
+                        return new Date(a.dueDate) - new Date(b.dueDate);
+                    });
+                }
 
                 renderTasks(tasks);
             } catch (error) {
                 console.error('Error loading tasks:', error);
+                // In case of error, render an empty list
+                renderTasks([]);
             }
         }
 
         // Create a new task
         async function createTask(task) {
+            console.log(task)
             const response = await fetch(API_URL, {
                 method: 'POST',
                 headers: {
@@ -420,24 +440,36 @@
                 return;
             }
 
+            const priorityText = {
+                1: 'Low',
+                2: 'Medium',
+                3: 'High'
+            };
+
+            const categoryText = {
+                1: 'Work',
+                2: 'Study',
+                3: 'Home'
+            };
+
             tasks.forEach(task => {
                 const row = document.createElement('tr');
                 if (task.completed) {
                     row.classList.add('completed');
                 }
 
-                // Format due date
                 const dueDate = new Date(task.dueDate);
                 const formattedDate = dueDate.toLocaleDateString() + ' ' +
                     dueDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-                // Check if task is overdue
                 const isOverdue = !task.completed && new Date() > dueDate;
+                const priority = priorityText[task.priority];
+                const category = categoryText[task.category];
 
                 row.innerHTML = `
                     <td title="${task.description}">${task.title}</td>
-                    <td class="priority-${task.priority.toLowerCase()}">${task.priority}</td>
-                    <td><span class="category-badge">${task.category}</span></td>
+                    <td class="priority-${priority.toLowerCase()}">${priority}</td>
+                    <td><span class="category-badge">${category}</span></td>
                     <td style="${isOverdue ? 'color: red;' : ''}">${formattedDate}</td>
                     <td class="task-actions">
                         <button class="complete-btn" data-id="${task.id}" title="${task.completed ? 'Mark as Pending' : 'Mark as Complete'}">
@@ -486,12 +518,24 @@
                 const response = await fetch(`${API_URL}/${id}`);
                 const task = await response.json();
 
+                const priorityText = {
+                    1: 'Low',
+                    2: 'Medium',
+                    3: 'High'
+                };
+
+                const categoryText = {
+                    1: 'Work',
+                    2: 'Study',
+                    3: 'Home'
+                };
+
                 // Populate form with task data
                 taskIdInput.value = task.id;
                 titleInput.value = task.title;
                 descriptionInput.value = task.description;
-                priorityInput.value = task.priority;
-                categoryInput.value = task.category;
+                priorityInput.value = priorityText[task.priority];
+                categoryInput.value = categoryText[task.category];
 
                 // Format date for datetime-local input
                 const dueDate = new Date(task.dueDate);
