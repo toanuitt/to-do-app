@@ -200,16 +200,16 @@
             <div class="filters">
                 <select id="filter-priority">
                     <option value="">All Priorities</option>
-                    <option value="High">High</option>
-                    <option value="Medium">Medium</option>
-                    <option value="Low">Low</option>
+                    <option value="3">High</option>
+                    <option value="2">Medium</option>
+                    <option value="1">Low</option>
                 </select>
 
                 <select id="filter-category">
                     <option value="">All Categories</option>
-                    <option value="Work">Work</option>
-                    <option value="Study">Study</option>
-                    <option value="Home">Home</option>
+                    <option value="1">Work</option>
+                    <option value="2">Study</option>
+                    <option value="3">Home</option>
                 </select>
 
                 <select id="filter-status">
@@ -325,23 +325,21 @@
                 const response = await fetch(API_URL);
                 let tasks = await response.json();
 
-                // If tasks is null or undefined, use an empty array instead
                 if (!tasks) {
                     tasks = [];
                 }
 
-                // Apply filters (only if there are tasks)
                 if (tasks.length > 0) {
                     const priorityFilter = filterPriority.value;
                     const categoryFilter = filterCategory.value;
                     const statusFilter = filterStatus.value;
 
                     if (priorityFilter) {
-                        tasks = tasks.filter(task => task.priority.toString() === priorityFilter);
+                        tasks = tasks.filter(task => task.priority === parseInt(priorityFilter));
                     }
 
                     if (categoryFilter) {
-                        tasks = tasks.filter(task => task.category.toString() === categoryFilter);
+                        tasks = tasks.filter(task => task.category === parseInt(categoryFilter));
                     }
 
                     if (statusFilter) {
@@ -352,13 +350,10 @@
                         }
                     }
 
-                    // Sort by priority and due date
+                    // Sort by priority (higher number = higher priority) and due date
                     tasks.sort((a, b) => {
-                        const priorityOrder = { 'HIGH': 1, 'MEDIUM': 2, 'LOW': 3 };
-                        const aPriority = a.priority.toString();
-                        const bPriority = b.priority.toString();
-                        if (priorityOrder[aPriority] !== priorityOrder[bPriority]) {
-                            return priorityOrder[aPriority] - priorityOrder[bPriority];
+                        if (a.priority !== b.priority) {
+                            return b.priority - a.priority;  // Higher priority first
                         }
                         return new Date(a.dueDate) - new Date(b.dueDate);
                     });
@@ -367,7 +362,6 @@
                 renderTasks(tasks);
             } catch (error) {
                 console.error('Error loading tasks:', error);
-                // In case of error, render an empty list
                 renderTasks([]);
             }
         }
@@ -500,7 +494,7 @@
         // Handle delete task button click
         async function handleDeleteTask() {
             const id = this.getAttribute('data-id');
-            if (confirm('Are you sure you want to delete this task?')) {
+            if (confirm('Do you want to delete this task?')) {
                 try {
                     await deleteTask(id);
                     loadTasks();
